@@ -1,5 +1,5 @@
 number: '0123456789०१२३४५६७८९'
-symbol: '!"#$%&\()*+,-./:;<=>?@[\\]^_`{|}~॰। '
+symbol: '!"#$%&\()*+,-./:;<=>?@[\\]^_`{|}~॰।'
 lang_char: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.ँंःअअंअःआइईउऊऋएऐऑओऔकखगघङचछजझञटठडढणतथदधनऩपफबभमयरऱलळवशषसह़ािीुूृॅेैॉोौ्ॐ॒क़ख़ग़ज़ड़ढ़फ़ॠ'
 experiment_name: 'ne_finetuned'
 train_data: 'all_data/train/names'
