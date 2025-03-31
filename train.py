@@ -169,7 +169,7 @@ def train(opt, show_number = 2, amp=False):
     best_norm_ED = -1
     i = start_iter
 
-    scaler = GradScaler()
+    scaler = torch.amp.GradScaler(device='cuda')
     t1= time.time()
         
     while(True):
