@@ -5,11 +5,11 @@ experiment_name: 'ne_finetuned'
 train_data: 'all_data/train/names'
 valid_data: 'all_data/val/names'
 manualSeed: 1111
-workers: 2
-batch_size: 32 #32
-num_iter: 3000
-valInterval: 200
-saved_model: '' #'saved_models/en_filtered/iter_300000.pth'
+workers: 4
+batch_size: 25 #25
+num_iter: 300
+valInterval: 20
+saved_model: 'saved_models/ne_filtered/iter_300.pth' #'saved_models/ne_filtered/iter_300000.pth'
 FT: False
 optim: False # default is Adadelta
 lr: 1.
@@ -22,8 +22,8 @@ select_data: 'names' # this is dataset folder in train_data
 batch_ratio: '1'
 total_data_usage_ratio: 1.0
 batch_max_length: 34
-imgH: 64
-imgW: 600
+imgH: 32
+imgW: 100
 rgb: False
 contrast_adjust: False
 sensitive: True
