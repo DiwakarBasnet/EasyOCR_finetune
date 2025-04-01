@@ -17,6 +17,8 @@ from model import Model
 from validation import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+
 def count_parameters(model):
     print("Modules, Parameters")
     total_params = 0
