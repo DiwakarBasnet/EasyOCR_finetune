@@ -7,7 +7,7 @@ valid_data: 'all_data/val/names'
 manualSeed: 1111
 workers: 4
 batch_size: 25 #25
-num_iter: 300
+num_iter: 1000
 valInterval: 20
 saved_model: '' #'saved_models/ne_filtered/iter_300000.pth'
 FT: False
