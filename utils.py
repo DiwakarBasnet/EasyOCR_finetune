@@ -268,6 +268,9 @@ class CTCLabelConverter(object):
                     char_list.append(self.character[t[i]])
             text = ''.join(char_list)
 
+            # Added line for clean prediction
+            text = text.replace('["', '').replace('"]', '')
+            
             texts.append(text)
             index += l
         return texts
@@ -277,6 +280,8 @@ class CTCLabelConverter(object):
 
         for i in range(mat.shape[0]):
             t = ctcBeamSearch(mat[i], self.character, self.ignore_idx, None, beamWidth=beamWidth)
+            # Added line for clean prediction
+            t = t.replace('["', '').replace('"]', '')
             texts.append(t)
         return texts
 
@@ -292,6 +297,8 @@ class CTCLabelConverter(object):
                 else: dict_list = self.dict_list[word[0]]
                 t = ctcBeamSearch(matrix, self.character, self.ignore_idx, None, beamWidth=beamWidth, dict_list=dict_list)
                 string += t
+            # Added line for clean prediction
+            string = string.replace('["', '').replace('"]', '')
             texts.append(string)
         return texts
 
@@ -338,6 +345,8 @@ class AttnLabelConverter(object):
         texts = []
         for index, l in enumerate(length):
             text = ''.join([self.character[i] for i in text_index[index, :]])
+            # Added line for clean prediction
+            text = text.replace('["', '').replace('"]', '')
             texts.append(text)
         return texts
 
