@@ -78,6 +78,9 @@ def validation(model, criterion, evaluation_loader, converter, opt, device):
                 pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
                 pred_max_prob = pred_max_prob[:pred_EOS]
 
+            # Post processing line for removing [""]
+            pred = pred.replace('["', '').replace('"]', '')
+
             if pred == gt:
                 n_correct += 1
 
