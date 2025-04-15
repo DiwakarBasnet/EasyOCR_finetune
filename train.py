@@ -26,6 +26,31 @@ def normalize_text(text):
     return unicodedata.normalize('NFC', text)
 
 
+def clean_prediction_for_display(pred):
+    """Clean prediction text for display purposes without affecting the original prediction."""
+    if isinstance(pred, list) and len(pred) > 0:
+        cleaned_pred = pred[0]
+    else:
+        cleaned_pred = str(pred)
+        
+    # Remove list-like formatting if present
+    if cleaned_pred.startswith('[\'') and cleaned_pred.endswith('\']'):
+        cleaned_pred = cleaned_pred[2:-2]
+    elif cleaned_pred.startswith('["') and cleaned_pred.endswith('"]'):
+        cleaned_pred = cleaned_pred[2:-2]
+    elif '[' in cleaned_pred and ']' in cleaned_pred:
+        # Try to extract content from within brackets
+        try:
+            import re
+            match = re.search(r'\[[\'\"](.+)[\'\"]\]', cleaned_pred)
+            if match:
+                cleaned_pred = match.group(1)
+        except:
+            pass
+            
+    return cleaned_pred.strip()
+
+
 def train(opt):
     """ dataset preparation """
     if not opt.data_filtering_off:
@@ -212,37 +237,32 @@ def train(opt):
                 dashed_line = '-' * 80
                 head = f'{"Ground Truth":25s} | {"Prediction":25s} | Confidence Score & T/F'
                 predicted_result_log = f'{dashed_line}\n{head}\n{dashed_line}\n'
-                for gt, pred, confidence in zip(labels[:5], preds[:5], confidence_score[:5]):
-                    if 'Attn' in opt.Prediction:
-                        gt = gt[:gt.find('[s]')]
-                        pred = pred[:pred.find('[s]')]
-                        
-                    gt_lst = ast.literal_eval(gt)
-                    gt_str = gt_lst[0]
-                    gt_str = normalize_text(gt_str)
-
-                    if isinstance(pred, list):
-                        pred_str = pred[0]
+                def clean_prediction_for_display(pred):
+                    """Clean prediction text for display purposes without affecting the original prediction."""
+                    if isinstance(pred, list) and len(pred) > 0:
+                        cleaned_pred = pred[0]
                     else:
-                        if pred.startswith('[') and (pred.endswith(']') or ']' in pred):
-                            try:
-                                parsed = ast.literal_eval(pred)
-                                if isinstance(parsed, list) and len(parsed) > 0:
-                                    pred_str = parsed[0]
-                                else:
-                                    pred_str = pred.strip('[]\'\"')
-                            except:
-                                pred_str = pred.replace('["', '').replace('"]', '').replace('[\'', '').replace('\']', '')
-                        else:
-                             pred_str = pred   
-                            
-                    pred_str = normalize_text(pred_str.strip())
-
-                    # Compare actual text content
-                    is_correct = pred_str == gt_str
-                    predicted_result_log += f'{gt_str:25s} | {pred_str:25s} | {confidence:0.4f}\t{str(is_correct)}\n'
+                        cleaned_pred = str(pred)
                     
+                    # Remove list-like formatting if present
+                    if cleaned_pred.startswith('[\'') and cleaned_pred.endswith('\']'):
+                        cleaned_pred = cleaned_pred[2:-2]
+                    elif cleaned_pred.startswith('["') and cleaned_pred.endswith('"]'):
+                        cleaned_pred = cleaned_pred[2:-2]
+                    elif '[' in cleaned_pred and ']' in cleaned_pred:
+                        # Try to extract content from within brackets
+                        try:
+                            import re
+                            match = re.search(r'\[[\'\"](.+)[\'\"]\]', cleaned_pred)
+                            if match:
+                                cleaned_pred = match.group(1)
+                        except:
+                            pass
+                            
+                    return cleaned_pred.strip()
+
                 predicted_result_log += f'{dashed_line}'
+                
                 print(predicted_result_log)
                 log.write(predicted_result_log + '\n')
 
