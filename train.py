@@ -216,15 +216,32 @@ def train(opt):
                     if 'Attn' in opt.Prediction:
                         gt = gt[:gt.find('[s]')]
                         pred = pred[:pred.find('[s]')]
-
+                        
                     gt_lst = ast.literal_eval(gt)
                     gt_str = gt_lst[0]
                     gt_str = normalize_text(gt_str)
 
-                    pred_str = pred[0] if isinstance(pred, list) else pred
+                    if isinstance(pred, list):
+                        pred_str = pred[0]
+                    else:
+                        if pred.startswith('[') and (pred.endswith(']') or ']' in pred):
+                            try:
+                                parsed = ast.literal_eval(pred)
+                                if isinstance(parsed, list) and len(parsed) > 0:
+                                    pred_str = parsed[0]
+                                else:
+                                    pred_str = pred.strip('[]\'\"')
+                            except:
+                                pred_str = pred.replace('["', '').replace('"]', '').replace('[\'', '').replace('\']', '')
+                        else:
+                             pred_str = pred   
+                            
                     pred_str = normalize_text(pred_str.strip())
 
-                    predicted_result_log += f'{gt_str:25s} | {pred_str:25s} | {confidence:0.4f}\t{str(pred_str == gt_str)}\n'
+                    # Compare actual text content
+                    is_correct = pred_str == gt_str
+                    predicted_result_log += f'{gt_str:25s} | {pred_str:25s} | {confidence:0.4f}\t{str(is_correct)}\n'
+                    
                 predicted_result_log += f'{dashed_line}'
                 print(predicted_result_log)
                 log.write(predicted_result_log + '\n')
