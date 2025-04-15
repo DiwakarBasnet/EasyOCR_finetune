@@ -237,31 +237,21 @@ def train(opt):
                 dashed_line = '-' * 80
                 head = f'{"Ground Truth":25s} | {"Prediction":25s} | Confidence Score & T/F'
                 predicted_result_log = f'{dashed_line}\n{head}\n{dashed_line}\n'
-                def clean_prediction_for_display(pred):
-                    """Clean prediction text for display purposes without affecting the original prediction."""
-                    if isinstance(pred, list) and len(pred) > 0:
-                        cleaned_pred = pred[0]
-                    else:
-                        cleaned_pred = str(pred)
+                for gt, pred, confidence in zip(labels[:5], preds[:5], confidence_score[:5]):
+                    if 'Attn' in opt.Prediction:
+                        gt = gt[:gt.find('[s]')]
+                        pred = pred[:pred.find('[s]')]
+                
+                    # Parse ground truth correctly
+                    gt_lst = ast.literal_eval(gt)
+                    gt_str = gt_lst[0]
+                    gt_str = normalize_text(gt_str)
+                
+                    # Clean prediction for display only
+                    pred_str = clean_prediction_for_display(pred)
+                    pred_str = normalize_text(pred_str)
                     
-                    # Remove list-like formatting if present
-                    if cleaned_pred.startswith('[\'') and cleaned_pred.endswith('\']'):
-                        cleaned_pred = cleaned_pred[2:-2]
-                    elif cleaned_pred.startswith('["') and cleaned_pred.endswith('"]'):
-                        cleaned_pred = cleaned_pred[2:-2]
-                    elif '[' in cleaned_pred and ']' in cleaned_pred:
-                        # Try to extract content from within brackets
-                        try:
-                            import re
-                            match = re.search(r'\[[\'\"](.+)[\'\"]\]', cleaned_pred)
-                            if match:
-                                cleaned_pred = match.group(1)
-                        except:
-                            pass
-                            
-                    return cleaned_pred.strip()
-
-                predicted_result_log += f'{dashed_line}'
+                    predicted_result_log += f'{gt_str:25s} | {pred_str:25s} | {confidence:0.4f}\t{str(pred_str == gt_str)}\n'
                 
                 print(predicted_result_log)
                 log.write(predicted_result_log + '\n')
