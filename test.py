@@ -153,6 +153,9 @@ def validation(model, criterion, evaluation_loader, converter, opt):
                 pred = re.sub(out_of_alphanumeric_case_insensitve, '', pred)
                 gt = re.sub(out_of_alphanumeric_case_insensitve, '', gt)
 
+            # Post processing line for removing [""]
+            pred = pred.replace('["', '').replace('"]', '')
+
             if pred == gt:
                 n_correct += 1
 
