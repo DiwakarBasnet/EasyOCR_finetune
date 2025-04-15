@@ -48,6 +48,9 @@ class CTCLabelConverter(object):
                     char_list.append(self.character[t[i]])
             text = ''.join(char_list)
 
+            # Added line for clean prediction
+            text = text.replace('["', '').replace('"]', '')
+
             texts.append(text)
         return texts
 
@@ -93,6 +96,9 @@ class CTCLabelConverterForBaiduWarpctc(object):
                 if t[i] != 0 and (not (i > 0 and t[i - 1] == t[i])):  # removing repeated characters and blank.
                     char_list.append(self.character[t[i]])
             text = ''.join(char_list)
+
+            # Added line for clean prediction
+            text = text.replace('["', '').replace('"]', '')
 
             texts.append(text)
             index += l
@@ -142,6 +148,8 @@ class AttnLabelConverter(object):
         texts = []
         for index, l in enumerate(length):
             text = ''.join([self.character[i] for i in text_index[index, :]])
+            # Added line for clean prediction
+            text = text.replace('["', '').replace('"]', '')
             texts.append(text)
         return texts
 
