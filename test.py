@@ -153,8 +153,19 @@ def validation(model, criterion, evaluation_loader, converter, opt):
                 pred = re.sub(out_of_alphanumeric_case_insensitve, '', pred)
                 gt = re.sub(out_of_alphanumeric_case_insensitve, '', gt)
 
-            # Post processing line for removing [""]
-            pred = pred.replace('["', '').replace('"]', '')
+            # Enhanced post-processing for prediction format
+            if isinstance(pred, list):
+                pred = pred[0]
+            elif pred.startswith('[') and pred.endswith(']'):
+                try:
+                    import ast
+                    parsed = ast.literal_eval(pred)
+                    if isinstance(parsed, list) and len(parsed) > 0:
+                        pred = parsed[0]
+                    else:
+                        pred = pred.strip('[]\'\"')
+                except:
+                    pred = pred.replace('["', '').replace('"]', '').replace('[\'', '').replace('\']', '')
 
             if pred == gt:
                 n_correct += 1
