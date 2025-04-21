@@ -186,6 +186,12 @@ class LmdbDataset(Dataset):
             label_key = 'label-%09d'.encode() % index
             label = txn.get(label_key).decode('utf-8')
             img_key = 'image-%09d'.encode() % index
+
+            # MODIFICATION: Remove any brackets, quotes and extra characters
+            # Since our data is in between [' and ']
+            if label.startswith("['") and label.endswith("']"):
+                label = label[2:-2]
+            
             imgbuf = txn.get(img_key)
 
             buf = six.BytesIO()
