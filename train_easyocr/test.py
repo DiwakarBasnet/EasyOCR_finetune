@@ -1,10 +1,15 @@
+import sys
+from pathlib import Path
+# Add project root directory (EasyOCR_finetune) to sys.path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from time import time
 import torch
 import torch.utils.data
 import torch.nn.functional as F
 from nltk.metrics.distance import edit_distance
 
-from .utils import (
+from train_easyocr.utils import (
     Averager
 )
 
