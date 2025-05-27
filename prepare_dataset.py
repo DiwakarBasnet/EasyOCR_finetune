@@ -136,7 +136,8 @@ if __name__ == "__main__":
     remaining = list(set(val_imgs) - set(val_set))
     eval_set  = random.sample(remaining,   k=config.eval_images)
 
-    out_base = ds_root.parent / "training_and_validation_set"
+    # out_base = ds_root.parent / "training_and_validation_set" 
+    out_base = "/kaggle/working/training_and_validation_set"
 
     if args.training:
         save_image_patches(out_base, "training", train_set, config.select_data)
