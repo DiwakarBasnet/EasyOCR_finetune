@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 from torch.utils.data import Dataset, ConcatDataset, Subset, DataLoader
-from torch._utils import _accumulate
+from itertools import accumulate
 import torchvision.transforms as T
 
 
@@ -75,7 +75,7 @@ class BatchBalancedDataset(object):
                 Subset(_dataset, indices[offset - length:offset])
                 for offset, length
                 in zip(
-                    _accumulate(dataset_split),
+                    accumulate(dataset_split),
                     dataset_split
                 )
             ]
