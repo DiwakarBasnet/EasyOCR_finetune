@@ -4,7 +4,7 @@ import torch.utils.data
 import torch.nn.functional as F
 from nltk.metrics.distance import edit_distance
 
-from train_easyocr.utils import (
+from .utils import (
     Averager
 )
 
