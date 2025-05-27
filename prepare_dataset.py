@@ -91,7 +91,8 @@ def save_image_patches(output_dir: Path, split: str, file_list, select_data: str
 
 def prepare_evaluation_set(eval_files, dataset_root: Path):
     print("→ Preparing evaluation set")
-    out_root = dataset_root / "evaluation_set"
+    # out_root = dataset_root / "evaluation_set"
+    out_root = Path("/kaggle/working/evaluation_set")
     for img_path in tqdm(eval_files):
         # copy JSON
         imgs_parent = img_path.parent
