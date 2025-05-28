@@ -21,7 +21,7 @@ batch_size: 8
 n_iter: 10_000
 val_period: 1_000
 show_number: 8
-continue_from: /models/devanagari.pth
+continue_from: devanagari.pth
 strict: True
 adam: False
 lr: 1.
