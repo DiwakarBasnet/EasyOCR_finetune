@@ -35,8 +35,8 @@ Prediction: CTC
 freeze_FeatureFxtraction: False
 rgb: False
 input_channel: 1
-output_channel: 256
+output_channel: 512
 freeze_SequenceModeling: False
-hidden_size: 256
+hidden_size: 512
 new_prediction: False
 decode: greedy
