@@ -40,28 +40,42 @@ def validation(model, criterion, val_loader, converter, config, device):
             # Calculate evaluation loss for CTC decoder.
             preds_size = torch.IntTensor([preds.size(1)] * batch_size)
 
-            ##########################################################################
+            #####################################################################################
+            
+            log_probs = preds.log_softmax(2).permute(1, 0, 2)
+
+            # Calculate evaluation loss for CTC decoder.
+            preds_size = torch.IntTensor([preds.size(1)] * batch_size)
+            
+            # Sanity checks
             print("log_probs shape:", log_probs.shape)
-            print("targets shape:", targets.shape)
-            print("input_lengths:", input_lengths)
-            print("target_lengths:", target_lengths)
+            print("targets shape:", text_for_loss.shape)
+            print("input_lengths:", preds_size)
+            print("target_lengths:", length_for_loss)
             
             # Check for NaNs or infs
             print("Any NaNs in log_probs:", torch.isnan(log_probs).any().item())
             print("Any Infs in log_probs:", torch.isinf(log_probs).any().item())
-
-            print("Any input_lengths < target_lengths:", (input_lengths < target_lengths).any().item())
-            print("Any input_lengths <= 0:", (input_lengths <= 0).any().item())
-            print("Any target_lengths <= 0:", (target_lengths <= 0).any().item())
-            ############################################################################
+            print("Any input_lengths < target_lengths:", (preds_size < length_for_loss).any().item())
+            print("Any input_lengths <= 0:", (preds_size <= 0).any().item())
+            print("Any target_lengths <= 0:", (length_for_loss <= 0).any().item())
             
             loss = criterion(
-                # Permute 'preds' to use `nn.CTCloss` format
-                log_probs=preds.log_softmax(2).permute(1, 0, 2),
-                targets=text_for_loss,
-                input_lengths=preds_size,
-                target_lengths=length_for_loss
+                log_probs,
+                text_for_loss,
+                preds_size,
+                length_for_loss
             )
+
+            #####################################################################################
+            
+            # loss = criterion(
+            #     # Permute 'preds' to use `nn.CTCloss` format
+            #     log_probs=preds.log_softmax(2).permute(1, 0, 2),
+            #     targets=text_for_loss,
+            #     input_lengths=preds_size,
+            #     target_lengths=length_for_loss
+            # )
 
             if config.decode == 'greedy':
                 # Select max probabilty (greedy decoding) then decode index to character
