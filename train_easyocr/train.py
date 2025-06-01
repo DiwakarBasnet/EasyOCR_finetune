@@ -195,7 +195,7 @@ def train(config, amp=False):
     best_norm_ed = -1
     i = start_iter
 
-    scaler = torch.amp.GradScaler(device_type='cuda')
+    scaler = GradScaler()
     t1 = time()
 
     while True:
