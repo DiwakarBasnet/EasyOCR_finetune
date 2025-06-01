@@ -39,6 +39,22 @@ def validation(model, criterion, val_loader, converter, config, device):
 
             # Calculate evaluation loss for CTC decoder.
             preds_size = torch.IntTensor([preds.size(1)] * batch_size)
+
+            ##########################################################################
+            print("log_probs shape:", log_probs.shape)
+            print("targets shape:", targets.shape)
+            print("input_lengths:", input_lengths)
+            print("target_lengths:", target_lengths)
+            
+            # Check for NaNs or infs
+            print("Any NaNs in log_probs:", torch.isnan(log_probs).any().item())
+            print("Any Infs in log_probs:", torch.isinf(log_probs).any().item())
+
+            print("Any input_lengths < target_lengths:", (input_lengths < target_lengths).any().item())
+            print("Any input_lengths <= 0:", (input_lengths <= 0).any().item())
+            print("Any target_lengths <= 0:", (target_lengths <= 0).any().item())
+            ############################################################################
+            
             loss = criterion(
                 # Permute 'preds' to use `nn.CTCloss` format
                 log_probs=preds.log_softmax(2).permute(1, 0, 2),
