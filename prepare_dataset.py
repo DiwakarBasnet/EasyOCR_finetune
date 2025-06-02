@@ -126,7 +126,10 @@ if __name__ == "__main__":
 
     # collect all pngs under training/ and validation/
     train_imgs = list((ds_root / "training").rglob("*.png"))
+    train_imgs = [p for p in train_imgs if "images_train" in str(p)]
+    
     val_imgs   = list((ds_root / "validation").rglob("*.png"))
+    val_imgs = [p for p in val_imgs if "images_valid" in str(p)]
 
     print(f"→ Found {len(train_imgs)} training images")
     print(f"→ Found {len(val_imgs)} validation images\n")
