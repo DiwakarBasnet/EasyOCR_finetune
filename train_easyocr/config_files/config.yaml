@@ -1,7 +1,9 @@
 seed: 1111
 experiment_name: phase1
-train_data: /kaggle/working/training_and_validation_set/training
-val_data: /kaggle/working/training_and_validation_set/validation
+# train_data: /kaggle/working/training_and_validation_set/training
+# val_data: /kaggle/working/training_and_validation_set/validation
+train_data: /kaggle/input/d/unspoiledegg/nep-nid-dataset/Dataset/training
+val_data: /kaggle/input/d/unspoiledegg/nep-nid-dataset/Dataset/validation
 select_data: select_data
 batch_ratio: "1"
 total_data_usage_ratio: 1
