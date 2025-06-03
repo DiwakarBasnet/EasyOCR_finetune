@@ -129,7 +129,7 @@ if __name__ == "__main__":
     train_imgs = [p for p in train_imgs if "images_train" in str(p)]
     
     val_imgs   = list((ds_root / "validation").rglob("*.png"))
-    val_imgs = [p for p in val_imgs if "images_valid" in str(p)]
+    val_imgs = [p for p in val_imgs if "images_val" in str(p)]
 
     print(f"→ Found {len(train_imgs)} training images")
     print(f"→ Found {len(val_imgs)} validation images\n")
