@@ -31,6 +31,8 @@ def validation(model, criterion, val_loader, converter, config, device):
         text_for_pred = torch.LongTensor(batch_size, config.batch_max_length + 1).fill_(0).to(device)
 
         text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=config.batch_max_length)
+        text_for_loss = text_for_loss.to(device)
+        length_for_loss = length_for_loss.to(device)
         
         start_time = time()
         if 'CTC' in config.Prediction:
@@ -61,10 +63,10 @@ def validation(model, criterion, val_loader, converter, config, device):
             print("Any target_lengths <= 0:", (length_for_loss <= 0).any().item())
             
             loss = criterion(
-                log_probs,
-                text_for_loss,
-                preds_size,
-                length_for_loss
+                log_probs=log_probs,
+                targets=text_for_loss,
+                input_lengths=preds_size,
+                target_lengths=length_for_loss
             )
 
             #####################################################################################
