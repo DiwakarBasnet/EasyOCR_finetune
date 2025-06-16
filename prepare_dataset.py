@@ -94,7 +94,7 @@ def main():
     if args.evaluation:
         print("→ Generating evaluation set")
         eval_dst = eval_base
-n        # copy images only (no labels.csv)
+        # copy images only (no labels.csv)
         img_out = eval_dst / 'images'
         img_out.mkdir(parents=True, exist_ok=True)
         for img_path, _ in eval_sel:
