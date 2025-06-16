@@ -1,151 +1,106 @@
-import json
 import argparse
-import numpy as np
-import pandas as pd
-from pathlib import Path
-from tqdm.auto import tqdm
 import random
-import yaml
 import shutil
+from pathlib import Path
 from csv import writer
+import yaml
 
 from train_easyocr.utils import AttrDict
-from process_images import (
-    load_image_as_array,
-    save_image,
-    get_image_cropped_by_rectangle
-)
 
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description="prepare_dataset")
-
+    parser = argparse.ArgumentParser(description="prepare_dataset for single-character EasyOCR finetuning")
     parser.add_argument("--dataset", required=True,
-                        help="Path to the root Dataset folder")
+                        help="Path to DevanagariHandwrittenCharacterDataset root")
     parser.add_argument("--training", action="store_true",
-                        help="Generate training patches")
+                        help="Generate training set")
     parser.add_argument("--validation", action="store_true",
-                        help="Generate validation patches")
+                        help="Generate validation set")
     parser.add_argument("--evaluation", action="store_true",
-                        help="Copy evaluation set")
-
+                        help="Generate evaluation set")
     return parser.parse_args()
 
 
-def parse_json_file(json_path):
-    """Load a JSON label file and return a DataFrame of bboxes + text."""
-    with open(json_path, "r", encoding="utf8") as f:
-        label = json.load(f)
-
-    df = pd.DataFrame(
-        [(*ann["annotation.bbox"], ann["annotation.text"])
-         for ann in label["annotations"]],
-        columns=["xmin", "ymin", "w", "h", "text"]
-    )
-    # convert w,h → xmax,ymax
-    df["xmax"] = df["xmin"] + df["w"]
-    df["ymax"] = df["ymin"] + df["h"]
-    return df[["xmin", "ymin", "xmax", "ymax", "text"]]
-
-
-def save_image_patches(output_dir: Path, split: str, file_list, select_data: str):
-    print(f"→ Generating image patches for {split} set")
-    save_dir = output_dir / split / select_data
-    img_out_dir = save_dir / "images"
-    save_dir.mkdir(parents=True, exist_ok=True)
+def collect_and_copy(images, dst_dir: Path, labels_csv: Path):
+    """
+    Copy images list to dst_dir/images and write labels.csv with filename,label
+    """
+    img_out_dir = dst_dir / "images"
     img_out_dir.mkdir(parents=True, exist_ok=True)
 
-    labels_csv = save_dir / "labels.csv"
-    pd.DataFrame(columns=["filename", "words"]).to_csv(labels_csv, index=False)
+    # Write header
+    with open(labels_csv, 'w', newline='', encoding='utf8') as f:
+        csv_w = writer(f)
+        csv_w.writerow(["filename", "label"])
 
-    for img_path in tqdm(file_list):
-        # img_path: .../images_train/images/nid_1.png  (or images_val/images/*.png)
-        # find its corresponding JSON:
-        imgs_parent = img_path.parent           # .../.../images
-        group_dir  = imgs_parent.parent         # .../.../images_train
-        labels_dir = group_dir.parent / group_dir.name.replace("images", "labels") / "labels"
-        json_path  = labels_dir / f"{img_path.stem}.json"
-        if not json_path.exists():
-            continue
-
-        img = load_image_as_array(str(img_path))
-        gt = parse_json_file(json_path)
-
-        for xmin, ymin, xmax, ymax, text in gt.values:
-            xmin, ymin = max(0, xmin), max(0, ymin)
-            try:
-                patch = get_image_cropped_by_rectangle(
-                    img=img, xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax
-                )
-                out_name = f"{img_path.stem}_{xmin}-{ymin}-{xmax}-{ymax}.png"
-                out_path = img_out_dir / out_name
-                if not out_path.exists():
-                    save_image(img=patch, path=str(out_path))
-                    with open(labels_csv, "a", newline="", encoding="utf8") as f:
-                        writer(f).writerow((out_name, text))
-            except Exception:
-                print(f"    ✗ Failed to save patch {out_name}")
-
-    print(f"✔ Completed {split} patches\n")
+    for img_path, label in images:
+        dst_name = img_path.name
+        dst_path = img_out_dir / dst_name
+        shutil.copy(str(img_path), str(dst_path))
+        with open(labels_csv, 'a', newline='', encoding='utf8') as f:
+            csv_w = writer(f)
+            csv_w.writerow([dst_name, label])
 
 
-def prepare_evaluation_set(eval_files, dataset_root: Path):
-    print("→ Preparing evaluation set")
-    # out_root = dataset_root / "evaluation_set"
-    out_root = Path("/kaggle/working/evaluation_set")
-    for img_path in tqdm(eval_files):
-        # copy JSON
-        imgs_parent = img_path.parent
-        group_dir  = imgs_parent.parent
-        labels_dir = group_dir.parent / group_dir.name.replace("images", "labels") / "labels"
-        json_path  = labels_dir / f"{img_path.stem}.json"
-
-        # target paths
-        rel = img_path.relative_to(dataset_root / "validation")
-        target_img = out_root / "images" / rel
-        target_json = out_root / "labels" / rel.with_suffix(".json")
-
-        target_img.parent.mkdir(parents=True, exist_ok=True)
-        target_json.parent.mkdir(parents=True, exist_ok=True)
-
-        shutil.copy(img_path, target_img)
-        shutil.copy(json_path, target_json)
-
-    print("✔ Evaluation set ready\n")
-
-
-if __name__ == "__main__":
+def main():
     args = get_arguments()
     ds_root = Path(args.dataset)
 
     # load config
     cfg_path = Path(__file__).parent / "train_easyocr/config_files/config.yaml"
-    config = AttrDict(yaml.safe_load(cfg_path.open("r", encoding="utf8")))
-
+    config = AttrDict(yaml.safe_load(cfg_path.open('r', encoding='utf8')))
     random.seed(config.seed)
 
-    # collect all pngs under training/ and validation/
-    train_imgs = list((ds_root / "training").rglob("*.png"))
-    train_imgs = [p for p in train_imgs if "images_train" in str(p)]
-    
-    val_imgs   = list((ds_root / "validation").rglob("*.png"))
-    val_imgs = [p for p in val_imgs if "images_val" in str(p)]
+    # gather all (image_path, label) tuples
+    train_folder = ds_root / 'Train'
+    test_folder = ds_root / 'Test'
 
-    print(f"→ Found {len(train_imgs)} training images")
-    print(f"→ Found {len(val_imgs)} validation images\n")
+    all_train = []
+    for class_dir in train_folder.iterdir():
+        if class_dir.is_dir():
+            for img in class_dir.glob('*.png'):
+                all_train.append((img, class_dir.name))
 
-    train_set = random.sample(train_imgs, k=config.train_images)
-    val_set   = random.sample(val_imgs,   k=config.val_images)
-    # eval = remaining from val
-    remaining = list(set(val_imgs) - set(val_set))
-    eval_set  = random.sample(remaining,   k=config.eval_images)
+    all_test = []
+    for class_dir in test_folder.iterdir():
+        if class_dir.is_dir():
+            for img in class_dir.glob('*.png'):
+                all_test.append((img, class_dir.name))
 
-    # out_base = ds_root.parent / "training_and_validation_set" 
-    out_base = Path("/kaggle/working/training_and_validation_set")
+    # sample sets
+    train_sel = random.sample(all_train, k=min(config.train_images, len(all_train)))
+    val_sel   = random.sample(all_test,  k=min(config.val_images,   len(all_test)))
+    # for evaluation, sample from remaining test
+    remaining = list(set(all_test) - set(val_sel))
+    eval_sel  = random.sample(remaining, k=min(config.eval_images, len(remaining)))
+
+    out_base = Path.cwd() / 'training_and_validation_set'
+    eval_base = Path.cwd() / 'evaluation_set'
 
     if args.training:
-        save_image_patches(out_base, "training", train_set, config.select_data)
+        print("→ Generating training set")
+        train_dst = out_base / 'training'
+        train_dst.mkdir(parents=True, exist_ok=True)
+        collect_and_copy(train_sel, train_dst, train_dst / 'labels.csv')
+        print(f"✔ Training set ready at {train_dst}")
+
     if args.validation:
-        save_image_patches(out_base, "validation", val_set,   config.select_data)
+        print("→ Generating validation set")
+        val_dst = out_base / 'validation'
+        val_dst.mkdir(parents=True, exist_ok=True)
+        collect_and_copy(val_sel, val_dst, val_dst / 'labels.csv')
+        print(f"✔ Validation set ready at {val_dst}")
+
     if args.evaluation:
-        prepare_evaluation_set(eval_set, ds_root)
+        print("→ Generating evaluation set")
+        eval_dst = eval_base
+n        # copy images only (no labels.csv)
+        img_out = eval_dst / 'images'
+        img_out.mkdir(parents=True, exist_ok=True)
+        for img_path, _ in eval_sel:
+            dst = img_out / img_path.name
+            shutil.copy(str(img_path), str(dst))
+        print(f"✔ Evaluation images ready at {eval_dst}")
+
+if __name__ == '__main__':
+    main()
