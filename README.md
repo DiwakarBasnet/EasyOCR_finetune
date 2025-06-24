@@ -100,32 +100,4 @@
 
 ## Step 3: Fine-tunning or Training from Scratch
 - Run `bash step3_run_train_py.sh`
-
-## Step 4: Model Setting
-1. Run `bash step4_set_finetuned_model.sh` [1]
-    - The example of 'step4_set_finetuned_model.sh':
-    ```sh
-    cp train_easyocr/saved_models/phase4/best_norm_ed.pth ~/.EasyOCR/model/finetuned.pth
-    cp finetuned/finetuned.py ~/.EasyOCR/user_network/finetuned.py
-    cp finetuned/finetuned.yaml ~/.EasyOCR/user_network/finetuned.yaml
-    ```
-    - Then the structure of directory '~/.EasyOCR' would be like,
-    ```
-    ~/.EasyOCR
-    ├── model
-    │   └── finetuned.pth
-    └── user_network
-        ├── finetuned.py
-        └── finetuned.yaml
-    ```
-
-## Step 5: Evaluation
-1. Run `bash step5_run_evaluate_py.sh`
-    ```sh
-    # 'step5_run_evaluate_py.sh'
-    python3 evaluate.py\
-    --eval_set="/data/evaluation_set"\ # Path to the evaluation set
-    --baseline\ # Whether to evaluate EasyOCR baseline model
-    --finetuned\ # Whether to evaluate fine-tuned model
-    --cuda # Whether to use GPU
-    ```
+  
